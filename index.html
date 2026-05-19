@@ -86,7 +86,7 @@ animation:gr 8s steps(10) infinite}
 #hero em{font-style:italic}
 #hero .sub{margin-top:16px;font-size:9px;letter-spacing:.5em;color:var(--fg2);opacity:0}
 #hero .cue{position:absolute;bottom:clamp(20px,5vh,40px);display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0}
-#hero .cue span{font-size:7px;letter-spacing:.3em;color:var(--fg3)}
+#hero .cue span{font-size:10px;letter-spacing:.25em;color:var(--fg2);font-family:'Noto Serif SC',serif;font-weight:200}
 #hero .cue i{width:1px;height:24px;background:var(--fg3);display:block;overflow:hidden;position:relative}
 #hero .cue i::after{content:'';position:absolute;inset:0;background:var(--fg2);animation:sc 2s ease-in-out infinite}
 @keyframes sc{0%{transform:translateY(-100%)}50%{transform:translateY(100%)}100%{transform:translateY(100%)}}
@@ -238,12 +238,14 @@ animation:gr 8s steps(10) infinite}
   .shd{padding:80px 20px 32px}
   .split{grid-template-columns:1fr;padding:0 20px}
   .spc{display:none}.spr{margin-top:0}
-  .webt{flex-direction:column;gap:24px;padding:0 20px;min-height:auto}
-  .wc{width:100%}
-  .vidt{flex-direction:column;gap:32px;padding:0 20px;min-height:auto}
-  .vc{width:100%}
+  .webw{overflow:visible}
+  .webt{flex-direction:column;gap:48px;padding:0 20px 40px;min-height:auto}
+  .wc{width:100%;transform-style:preserve-3d}
+  .vidw{overflow:visible}
+  .vidt{flex-direction:column;gap:56px;padding:0 20px 40px;min-height:auto}
+  .vc{width:100%;transform-style:preserve-3d}
   .we{display:none}
-  .sdiv{padding:60px 0}
+  .sdiv{padding:70px 0}
   .ctc{padding:60px 20px 30px}
   .ct-links{gap:20px}
   .ft{padding:30px 20px 14px}
@@ -256,7 +258,7 @@ animation:gr 8s steps(10) infinite}
 </head>
 <body class="locked">
 
-<div id="loader"><h2>LIN YU</h2><div class="bar"><div id="lf"></div></div></div>
+<div id="loader"><h2>LIN YU</h2><p id="lpct" style="font-size:11px;letter-spacing:.3em;color:var(--fg3);margin-top:16px">0%</p><div class="bar"><div id="lf"></div></div></div>
 <canvas id="gl"></canvas>
 <div class="grain"></div>
 <div class="cur" id="cr"></div><div class="cdd" id="cdd"></div>
@@ -275,7 +277,7 @@ animation:gr 8s steps(10) infinite}
 <section id="hero">
   <h1><span class="ln"><span>Creative</span></span><span class="ln"><span><em>Vision</em></span></span></h1>
   <p class="sub" id="hsub">DESIGN · VISION · NARRATIVE</p>
-  <div class="cue" id="hcue"><span>SCROLL</span><i></i></div>
+  <div class="cue" id="hcue"><span>向下滑动探索</span><i></i></div>
 </section>
 
 <div class="g3l" id="g3l"><span class="n">01</span><div class="cn">影像</div><span class="en">VISUAL</span></div>
@@ -627,6 +629,13 @@ if(!isMob){
   const vtrack=document.getElementById('vdt');const vdist=()=>vtrack.scrollWidth-innerWidth+96;
   if(vdist()>10)gsap.to(vtrack,{x:()=>-vdist(),ease:'none',scrollTrigger:{trigger:'.vidw',start:'top top',end:()=>'+='+vdist(),pin:true,scrub:1,invalidateOnRefresh:true,anticipatePin:1}});
 }
+/* Mobile: cards pop in with 3D perspective effect */
+if(isMob){
+  document.querySelectorAll('.wc').forEach((el,i)=>{gsap.from(el,{y:100,opacity:0,rotationX:12,scale:.92,transformPerspective:900,transformOrigin:'center bottom',duration:1.1,ease:'power3.out',delay:i*.1,scrollTrigger:{trigger:el,start:'top 94%'}});});
+  document.querySelectorAll('.vc').forEach((el,i)=>{gsap.from(el,{y:100,opacity:0,rotationX:12,scale:.92,transformPerspective:900,transformOrigin:'center bottom',duration:1.1,ease:'power3.out',delay:i*.1,scrollTrigger:{trigger:el,start:'top 94%'}});});
+  /* Mobile 3D section title reveals */
+  document.querySelectorAll('.shd').forEach(el=>{gsap.from(el,{rotationX:6,y:60,opacity:0,transformPerspective:1000,transformOrigin:'center bottom',duration:1.2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}});});
+}
 
 /* Outro */
 const oStars=document.getElementById('ostars');let sb='';
@@ -653,9 +662,13 @@ const mbtn=document.getElementById('mbtn'),mmenu=document.getElementById('mmenu'
 mbtn.onclick=()=>{mbtn.classList.toggle('open');mmenu.classList.toggle('open');};
 document.querySelectorAll('[data-ms]').forEach(a=>{a.onclick=e=>{e.preventDefault();mbtn.classList.remove('open');mmenu.classList.remove('open');navTo(a.dataset.ms);};});
 
-/* ═══ OPENING ═══ */
-let lv=0;function ldS(){lv+=Math.random()*16+10;if(lv>100)lv=100;document.getElementById('lf').style.width=lv+'%';if(lv<100)setTimeout(ldS,30+Math.random()*60);else setTimeout(go,200);}
-setTimeout(ldS,400);
+/* ═══ OPENING — real asset preloading ═══ */
+const preloadSrcs=[...FEAT.map(f=>f.s),...WEBS.map(w=>w.p),...GRID.slice(0,6).map(g=>g.s)];
+let ldDone=0;const ldTotal=preloadSrcs.length;
+function ldUp(){ldDone++;const pct=Math.round(ldDone/ldTotal*100);document.getElementById('lf').style.width=pct+'%';document.getElementById('lpct').textContent=pct+'%';if(ldDone>=ldTotal)setTimeout(go,300);}
+preloadSrcs.forEach(src=>{const img=new Image();img.onload=img.onerror=ldUp;img.src=src;});
+/* Fallback: if loading takes too long, start anyway */
+setTimeout(()=>{if(ldDone<ldTotal){document.getElementById('lf').style.width='100%';document.getElementById('lpct').textContent='100%';setTimeout(go,200);}},8000);
 function go(){
   document.getElementById('loader').classList.add('hide');setTimeout(()=>document.getElementById('loader').style.display='none',800);
   /* Phase 1: Particles appear from all directions */
@@ -674,7 +687,9 @@ function go(){
     document.getElementById('hero').style.opacity='1';
     gsap.to('.ln span',{y:0,duration:1.2,stagger:.15,ease:'power4.out'});
     gsap.to('#hsub',{opacity:.5,duration:.8,delay:.4});
-    gsap.to('#hcue',{opacity:.4,duration:.6,delay:.9});
+    gsap.to('#hcue',{opacity:.6,duration:.8,delay:.8});
+    /* Auto-hide scroll hint after 4s */
+    setTimeout(()=>{gsap.to('#hcue',{opacity:0,duration:1,ease:'power2.in'});},4500);
     document.getElementById('nav').classList.add('show');
     setTimeout(()=>document.body.classList.remove('locked'),1400);
   },9000);
