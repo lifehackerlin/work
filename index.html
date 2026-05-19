@@ -158,7 +158,7 @@ animation:gr 8s steps(10) infinite}
 .vidw{overflow:hidden}
 .vidt{display:flex;gap:10vw;padding:0 clamp(20px,4vw,48px);align-items:center;min-height:82vh}
 .vc{width:clamp(300px,75vw,1100px);flex-shrink:0;position:relative;border-radius:8px;overflow:hidden;background:#08080d;aspect-ratio:16/9}
-.vc video{width:100%;height:100%;object-fit:cover;opacity:.35;transition:opacity .8s}
+.vc video{width:100%;height:100%;object-fit:cover;opacity:.7;transition:opacity .8s}
 .vc.playing video{opacity:1}
 .vc .vo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .4s}
 .vc.playing .vo{opacity:.4}
@@ -239,11 +239,11 @@ animation:gr 8s steps(10) infinite}
   .split{grid-template-columns:1fr;padding:0 20px}
   .spc{display:none}.spr{margin-top:0}
   .webw{overflow:visible}
-  .webt{flex-direction:column;gap:48px;padding:0 20px 40px;min-height:auto}
-  .wc{width:100%;transform-style:preserve-3d}
+  .webt{flex-direction:column;gap:0;padding:0;min-height:auto}
+  .wc{width:100%;aspect-ratio:16/10;border-radius:0;transform-style:preserve-3d}
   .vidw{overflow:visible}
-  .vidt{flex-direction:column;gap:56px;padding:0 20px 40px;min-height:auto}
-  .vc{width:100%;transform-style:preserve-3d}
+  .vidt{flex-direction:column;gap:0;padding:0;min-height:auto}
+  .vc{width:100%;height:75vh;aspect-ratio:auto;border-radius:0;transform-style:preserve-3d}
   .we{display:none}
   .sdiv{padding:70px 0}
   .ctc{padding:60px 20px 30px}
@@ -393,13 +393,13 @@ const wt=document.getElementById('wt');
 WEBS.forEach((w,i)=>{
   const c=document.createElement('div');c.className='wc';
   c.onclick=()=>window.open(w.u,'_blank');
-  c.innerHTML=`<img src="${w.p}" alt="${w.t}"><div class="wi"><div class="wn">0${i+1}</div><h3>${w.t} &mdash; ${w.st}</h3><p>${w.d}</p><span class="wb">查看项目 &rarr;</span></div>`;
+  c.innerHTML=`<img src="${w.p}" alt="${w.t}" loading="eager" onerror="this.style.display='none'"><div class="wi"><div class="wn">0${i+1}</div><h3>${w.t} &mdash; ${w.st}</h3><p>${w.d}</p><span class="wb">查看项目 &rarr;</span></div>`;
   wt.insertBefore(c,wt.firstElementChild);
 });
 
 const vdt=document.getElementById('vdt');
 VIDS.forEach((v,i)=>{
-  vdt.innerHTML+=`<div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="metadata"></video><div class="vo"><div class="vp"><svg width="20" height="20" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div>`;
+  vdt.innerHTML+=`<div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="auto"></video><div class="vo"><div class="vp"><svg width="20" height="20" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div>`;
 });
 
 /* Auto-play videos — only when video section is actually in view */
@@ -619,9 +619,9 @@ document.querySelectorAll('.rv').forEach(el=>{gsap.to(el,{opacity:1,y:0,duration
 document.querySelectorAll('.mi').forEach(el=>{gsap.from(el,{opacity:0,y:35,duration:.9,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 96%'}});});
 document.querySelectorAll('[data-sdiv]').forEach(el=>{gsap.to(el,{width:180,duration:1.5,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 80%'}});});
 /* 3D section divider shapes */
-document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{rotationX:90,rotationY:180,scale:.3,opacity:0,duration:1.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
-/* 3D perspective entry for sections */
-document.querySelectorAll('#sec-web .shd, #sec-vid .shd').forEach(el=>{gsap.from(el,{rotationX:5,y:80,opacity:0,transformPerspective:1200,transformOrigin:'center bottom',duration:1.4,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%'}});});
+document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{rotationX:120,rotationY:240,scale:.15,opacity:0,duration:2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
+/* 3D perspective entry for sections — dramatic */
+document.querySelectorAll('#sec-web, #sec-vid').forEach(el=>{gsap.from(el,{rotationX:8,y:120,opacity:0,scale:.95,transformPerspective:1000,transformOrigin:'center top',duration:1.6,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
 
 if(!isMob){
   const track=document.getElementById('wt');const dist=()=>track.scrollWidth-innerWidth+96;
@@ -629,12 +629,27 @@ if(!isMob){
   const vtrack=document.getElementById('vdt');const vdist=()=>vtrack.scrollWidth-innerWidth+96;
   if(vdist()>10)gsap.to(vtrack,{x:()=>-vdist(),ease:'none',scrollTrigger:{trigger:'.vidw',start:'top top',end:()=>'+='+vdist(),pin:true,scrub:1,invalidateOnRefresh:true,anticipatePin:1}});
 }
-/* Mobile: cards pop in with 3D perspective effect */
+/* Mobile: full-screen pinned cards — one at a time */
 if(isMob){
-  document.querySelectorAll('.wc').forEach((el,i)=>{gsap.from(el,{y:100,opacity:0,rotationX:12,scale:.92,transformPerspective:900,transformOrigin:'center bottom',duration:1.1,ease:'power3.out',delay:i*.1,scrollTrigger:{trigger:el,start:'top 94%'}});});
-  document.querySelectorAll('.vc').forEach((el,i)=>{gsap.from(el,{y:100,opacity:0,rotationX:12,scale:.92,transformPerspective:900,transformOrigin:'center bottom',duration:1.1,ease:'power3.out',delay:i*.1,scrollTrigger:{trigger:el,start:'top 94%'}});});
-  /* Mobile 3D section title reveals */
-  document.querySelectorAll('.shd').forEach(el=>{gsap.from(el,{rotationX:6,y:60,opacity:0,transformPerspective:1000,transformOrigin:'center bottom',duration:1.2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}});});
+  /* Web project cards: pin + 3D entry */
+  document.querySelectorAll('.wc').forEach(card=>{
+    ScrollTrigger.create({trigger:card,start:'top 8%',end:'+=90%',pin:true,pinSpacing:true,
+      onEnter:()=>{gsap.from(card,{scale:.88,opacity:0,rotationX:15,transformPerspective:800,transformOrigin:'center center',duration:.9,ease:'power3.out'});},
+      onEnterBack:()=>{gsap.from(card,{scale:.88,opacity:0,duration:.6,ease:'power2.out'});}
+    });
+  });
+  /* Video cards: pin + auto-play + 3D entry */
+  document.querySelectorAll('.vc').forEach(card=>{
+    const vid=card.querySelector('video');
+    ScrollTrigger.create({trigger:card,start:'top 8%',end:'+=100%',pin:true,pinSpacing:true,
+      onEnter:()=>{vid.play().catch(()=>{});card.classList.add('playing');gsap.from(card,{scale:.88,opacity:0,rotationX:15,transformPerspective:800,transformOrigin:'center center',duration:.9,ease:'power3.out'});},
+      onLeave:()=>{vid.pause();card.classList.remove('playing');},
+      onEnterBack:()=>{vid.play().catch(()=>{});card.classList.add('playing');gsap.from(card,{scale:.88,opacity:0,duration:.6,ease:'power2.out'});},
+      onLeaveBack:()=>{vid.pause();card.classList.remove('playing');}
+    });
+  });
+  /* Mobile 3D section title reveals — dramatic */
+  document.querySelectorAll('.shd').forEach(el=>{gsap.from(el,{rotationX:12,y:80,opacity:0,scale:.9,transformPerspective:800,transformOrigin:'center bottom',duration:1.4,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}});});
 }
 
 /* Outro */
