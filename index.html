@@ -243,6 +243,20 @@ animation:gr 8s steps(10) infinite}
 .wov-back:hover{border-color:rgba(255,255,255,.2);color:var(--fg);background:rgba(7,7,11,.95)}
 .wov-back svg{width:14px;height:14px;fill:currentColor}
 
+/* MUSIC TOGGLE */
+.mu{position:fixed;bottom:clamp(16px,3vh,28px);right:clamp(16px,3vw,28px);z-index:150;width:40px;height:40px;border-radius:50%;border:1px solid var(--fg3);background:rgba(7,7,11,.6);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .4s var(--ease);opacity:0;pointer-events:none}
+.mu.show{opacity:1;pointer-events:auto}
+.mu:hover{border-color:rgba(255,255,255,.2);background:rgba(7,7,11,.8)}
+.mu svg{width:16px;height:16px;fill:var(--fg2);transition:fill .3s}
+.mu:hover svg{fill:var(--fg)}
+.mu .bar{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);display:flex;gap:2px;align-items:flex-end;height:8px}
+.mu .bar span{width:2px;background:var(--fg2);border-radius:1px;animation:none}
+.mu.on .bar span{animation:mub .6s ease-in-out infinite alternate}
+.mu.on .bar span:nth-child(1){height:3px;animation-delay:0s}
+.mu.on .bar span:nth-child(2){height:6px;animation-delay:.15s}
+.mu.on .bar span:nth-child(3){height:4px;animation-delay:.3s}
+@keyframes mub{from{height:2px}to{height:8px}}
+
 .rv{opacity:0;transform:translateY(40px)}
 
 /* ═══ RESPONSIVE ═══ */
@@ -282,6 +296,11 @@ animation:gr 8s steps(10) infinite}
 <div class="cur" id="cr"></div><div class="cdd" id="cdd"></div>
 <div class="lbox lbox-t" id="lbt"></div><div class="lbox lbox-b" id="lbb"></div>
 <div id="prog"></div>
+<audio id="bgm" src="works/The_Grain_Beneath_the_Skin.mp3" loop preload="auto"></audio>
+<button class="mu" id="mu" aria-label="Music">
+  <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+  <div class="bar"><span></span><span></span><span></span></div>
+</button>
 
 <nav id="nav">
   <a class="logo" href="#">林 宇</a>
@@ -776,9 +795,21 @@ function go(){
     /* Auto-hide scroll hint after 4s */
     setTimeout(()=>{gsap.to('#hcue',{opacity:0,duration:1,ease:'power2.in'});},4500);
     document.getElementById('nav').classList.add('show');
+    document.getElementById('mu').classList.add('show');
+    /* Try auto-play music (needs user gesture on mobile, fallback to first touch) */
+    const bgm=document.getElementById('bgm');bgm.volume=0.3;
+    bgm.play().then(()=>{document.getElementById('mu').classList.add('on');}).catch(()=>{
+      document.addEventListener('click',function startBGM(){bgm.play().then(()=>{document.getElementById('mu').classList.add('on');}).catch(()=>{});document.removeEventListener('click',startBGM);},{once:true});
+    });
     setTimeout(()=>document.body.classList.remove('locked'),1400);
   },9000);
 }
+/* Music toggle */
+document.getElementById('mu').onclick=e=>{
+  e.stopPropagation();const bgm=document.getElementById('bgm'),btn=document.getElementById('mu');
+  if(bgm.paused){bgm.play().then(()=>btn.classList.add('on')).catch(()=>{});}
+  else{bgm.pause();btn.classList.remove('on');}
+};
 
 onresize=()=>{W=innerWidth;H=innerHeight;cam.aspect=W/H;cam.updateProjectionMatrix();R.setSize(W,H);comp.setSize(W,H);driverH=driverEl.offsetHeight;};
 </script>
