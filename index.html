@@ -123,7 +123,7 @@ animation:gr 8s steps(10) infinite}
 @keyframes sdivRot{to{transform:perspective(200px) rotateX(360deg) rotateY(360deg)}}
 
 /* NARRATIVE */
-.narr{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(60px,12vw,120px) clamp(20px,8vw,80px)}
+.narr{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(60px,12vw,120px) clamp(20px,8vw,80px);background:var(--bg);position:relative;z-index:2}
 .narr-c{max-width:680px;text-align:center}
 .narr-yr{font-family:var(--serif);font-size:clamp(11px,1.2vw,14px);color:var(--fg3);letter-spacing:.5em;margin-bottom:28px}
 .narr-line{font-family:'Noto Serif SC',serif;font-size:clamp(15px,2.2vw,22px);font-weight:200;line-height:2.4;color:var(--fg2);margin-bottom:4px}
@@ -301,24 +301,25 @@ animation:gr 8s steps(10) infinite}
 <div class="g3i" id="g3i"><div class="idx" id="g3idx">01</div><h3 id="g3t">&mdash;</h3><span class="g" id="g3g">&mdash;</span><div class="hint">CLICK TO VIEW</div></div>
 
 <div class="spacer"></div>
+
+<section class="narr" id="sec-narr">
+  <div class="narr-c">
+    <p class="narr-yr">MMXXV</p>
+    <p class="narr-line">我是一名华南师范大学的学生</p>
+    <p class="narr-line">2025，我开始了 AI 网站的尝试</p>
+    <p class="narr-line">目前我投入在 AI 视觉和听觉的设计</p>
+    <p class="narr-line">包含图片、视频、网站，以及它们的一键式生产</p>
+    <p class="narr-line narr-em">我在探索如何使用 AI 这一时代技术<br>给世界带来有用且美的事物</p>
+    <div class="narr-btns narr-line">
+      <button class="narr-btn" onclick="document.getElementById('sec-img').scrollIntoView({behavior:'smooth'})"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14l-5-5 1.41-1.41L11 13.17l7.59-7.59L20 7l-9 9z"/></svg>查看作品集</button>
+      <button class="narr-btn" id="narr-contact" onclick="document.getElementById('qrm').classList.add('on')"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>联系我</button>
+    </div>
+  </div>
+</section>
+
 <div class="driver" id="sec-img"></div>
 
 <main class="content">
-  <section class="narr sec" id="sec-narr">
-    <div class="narr-c">
-      <p class="narr-yr">MMXXV</p>
-      <p class="narr-line">我是一名华南师范大学的学生</p>
-      <p class="narr-line">2025，我开始了 AI 网站的尝试</p>
-      <p class="narr-line">目前我投入在 AI 视觉和听觉的设计</p>
-      <p class="narr-line">包含图片、视频、网站，以及它们的一键式生产</p>
-      <p class="narr-line narr-em">我在探索如何使用 AI 这一时代技术<br>给世界带来有用且美的事物</p>
-      <div class="narr-btns narr-line">
-        <button class="narr-btn" onclick="document.getElementById('sec-img').scrollIntoView({behavior:'smooth'})"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14l-5-5 1.41-1.41L11 13.17l7.59-7.59L20 7l-9 9z"/></svg>查看作品集</button>
-        <button class="narr-btn" id="narr-contact" onclick="document.getElementById('qrm').classList.add('on')"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>联系我</button>
-      </div>
-    </div>
-  </section>
-
   <section class="sec">
     <div class="shd rv"><div class="sn">01</div><div class="sl"></div><h2 class="st">影 像</h2><p class="ss">GALLERY</p></div>
     <div class="split"><div class="spl" id="spl"></div>
@@ -582,14 +583,14 @@ window.addEventListener('scroll',()=>{
   document.getElementById('prog').style.width=(sy/dH*100)+'%';
   scrollFade=Math.max(0,1-sy/(H*.7));
   document.getElementById('hero').style.opacity=scrollFade;
-  const dStart=H,dEnd=H+driverH,inGal=sy>H*.4&&sy<dEnd+H*.2,galP=Math.max(0,Math.min(1,(sy-dStart)/driverH));
+  const dStart=driverEl.offsetTop,dEnd=dStart+driverH,inGal=sy>dStart-H*.6&&sy<dEnd+H*.2,galP=Math.max(0,Math.min(1,(sy-dStart)/driverH));
 
   /* Letterbox in gallery */
   const lb1=document.getElementById('lbt'),lb2=document.getElementById('lbb');
   if(inGal&&galP>.05&&galP<.95){lb1.classList.add('on');lb2.classList.add('on');}
   else{lb1.classList.remove('on');lb2.classList.remove('on');}
 
-  if(sy<H*.8){camTZ=14;camOrbit=true;}
+  if(sy<dStart){camTZ=14;camOrbit=true;}
   else if(sy<dEnd){camTZ=8-galP*66;camOrbit=false;}
   else{camTZ=-58;camOrbit=false;}
   document.getElementById('g3l').style.opacity=inGal&&galP>.02&&galP<.95?.6:0;
@@ -598,7 +599,7 @@ window.addEventListener('scroll',()=>{
   const transS=dEnd-H*.2,transE=dEnd+H*.3;
   document.getElementById('gl').style.opacity=sy>transS?Math.max(.08,1-(sy-transS)/(transE-transS)*.92):1;
   let cur='';document.querySelectorAll('[id^="sec-"]').forEach(s=>{if(sy>=s.offsetTop-300)cur=s.id;});
-  if(sy>H*.5&&sy<dEnd)cur='sec-img';
+  if(sy>dStart&&sy<dEnd)cur='sec-img';
   document.querySelectorAll('.lk a').forEach(a=>a.classList.toggle('on',a.dataset.s===cur));
 });
 
@@ -609,7 +610,7 @@ document.getElementById('gl').addEventListener('click',e=>{mouse2.x=(e.clientX/W
 /* ═══ RENDER ═══ */
 const clk=new THREE.Clock();let curCZ=14;
 (function render(){
-  requestAnimationFrame(render);const t=clk.getElapsedTime();const sy=window.scrollY;const dEnd=H+driverH;const inGal=sy>H*.4&&sy<dEnd+H*.2;
+  requestAnimationFrame(render);const t=clk.getElapsedTime();const sy=window.scrollY;const dEnd=driverEl.offsetTop+driverH;const inGal=sy>driverEl.offsetTop-H*.6&&sy<dEnd+H*.2;
   if(camOrbit){orb+=.0015;cam.position.x+=(Math.sin(orb)*.35+mnx*.2-cam.position.x)*.05;cam.position.y+=(Math.cos(orb*.7)*.15+mny*.12-cam.position.y)*.05;curCZ+=(camTZ-curCZ)*.05;cam.position.z=curCZ;cam.lookAt(0,0,0);}
   else{cam.position.x+=(mnx*.4-cam.position.x)*.04;cam.position.y+=(mny*.25-cam.position.y)*.04;curCZ+=(camTZ-curCZ)*.06;cam.position.z=curCZ;cam.lookAt(cam.position.x*.3,cam.position.y*.2,curCZ-10);}
   cLight.position.set(cam.position.x,cam.position.y+.6,cam.position.z+1.2);
