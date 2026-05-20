@@ -122,6 +122,14 @@ animation:gr 8s steps(10) infinite}
 .sdiv-shape{width:36px;height:36px;border:1px solid rgba(176,136,64,.06);transform-style:preserve-3d;animation:sdivRot 18s linear infinite}
 @keyframes sdivRot{to{transform:perspective(200px) rotateX(360deg) rotateY(360deg)}}
 
+/* NARRATIVE */
+.narr{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(60px,12vw,120px) clamp(20px,8vw,80px)}
+.narr-c{max-width:680px;text-align:center}
+.narr-yr{font-family:var(--serif);font-size:clamp(11px,1.2vw,14px);color:var(--fg3);letter-spacing:.5em;margin-bottom:28px}
+.narr-line{font-family:'Noto Serif SC',serif;font-size:clamp(15px,2.2vw,22px);font-weight:200;line-height:2.4;color:var(--fg2);margin-bottom:4px}
+.narr-em{color:var(--fg);font-size:clamp(17px,2.6vw,26px);margin-top:36px;line-height:1.9;position:relative}
+.narr-em::before{content:'';display:block;width:32px;height:1px;background:rgba(176,136,64,.2);margin:0 auto 24px}
+
 /* SPLIT WATERFALL */
 .split{display:grid;grid-template-columns:1fr 48px 1fr;padding:0 clamp(20px,4vw,48px);max-width:1400px;margin:0 auto}
 .spl,.spr{display:flex;flex-direction:column;gap:14px}
@@ -138,33 +146,34 @@ animation:gr 8s steps(10) infinite}
 .mi:hover .mo h4{transform:translateY(0)}
 .mi .mo span{font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg2);margin-top:3px;transform:translateY(8px);transition:transform .5s var(--ease) .04s}
 .mi:hover .mo span{transform:translateY(0)}
+.mi .mh{position:absolute;top:10px;right:10px;font-size:8px;letter-spacing:.12em;color:rgba(255,255,255,.4);background:rgba(0,0,0,.35);padding:4px 10px;border-radius:20px;backdrop-filter:blur(6px);pointer-events:none;z-index:1;opacity:.7}
 
 /* WEB PROJECTS */
 .webw{overflow:hidden}
 .webt{padding:0 clamp(16px,4vw,48px)}
 .wc{position:relative;border-radius:clamp(12px,2vw,20px);overflow:hidden;background:#111;max-width:1100px;margin:0 auto clamp(40px,8vh,80px);box-shadow:0 16px 48px rgba(0,0,0,.4);cursor:pointer}
-.wc img{width:100%;height:auto;display:block;min-height:200px;object-fit:cover;transition:transform 1.2s var(--ease);filter:brightness(.85)}
+.wc img{width:100%;height:auto;display:block;min-height:200px;object-fit:cover;transition:transform 1.2s var(--ease);filter:brightness(.9)}
 .wc:hover img{transform:scale(1.03);filter:brightness(1)}
-.wc .wi{position:absolute;bottom:0;left:0;right:0;padding:clamp(16px,4vw,40px);background:linear-gradient(transparent,rgba(7,7,11,.92) 50%)}
-.wc .wn{font-family:var(--serif);font-size:clamp(28px,5vw,68px);color:rgba(255,255,255,.04);line-height:1}
-.wc .wi h3{font-family:var(--serif);font-size:clamp(18px,3vw,36px);font-weight:300;margin-top:4px}
-.wc .wi p{font-size:clamp(11px,1.2vw,13px);color:var(--fg2);line-height:1.7;max-width:400px;margin-top:8px}
-.wc .wb{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 24px;border:1px solid var(--fg3);border-radius:100px;font-size:9px;letter-spacing:.18em;color:var(--fg2);transition:all .4s var(--ease)}
-.wc:hover .wb{border-color:rgba(255,255,255,.2);color:var(--fg);gap:14px}
+.wc .wi{position:absolute;bottom:0;left:0;right:0;padding:clamp(10px,2vw,18px) clamp(14px,2.5vw,24px);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+.wc .wi h3{font-family:var(--serif);font-size:clamp(16px,2vw,24px);font-weight:300}
+.wc .wb{display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border:1px solid rgba(255,255,255,.15);border-radius:100px;font-size:8px;letter-spacing:.15em;color:rgba(255,255,255,.5);transition:all .4s var(--ease);white-space:nowrap}
+.wc:hover .wb{border-color:rgba(255,255,255,.3);color:var(--fg);gap:10px}
 .we{display:none}
 
-/* VIDEO — one at a time, pinned centered */
+/* VIDEO — one at a time, full viewport each */
 .vidw{overflow:hidden}
-.vidt{padding:0 clamp(16px,4vw,48px)}
-.vc{position:relative;border-radius:clamp(12px,2vw,20px);overflow:hidden;background:#08080d;aspect-ratio:16/9;max-width:1100px;margin:0 auto clamp(40px,8vh,80px);box-shadow:0 16px 48px rgba(0,0,0,.4)}
+.vidt{padding:0}
+.vs{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:0 clamp(16px,4vw,48px)}
+.vc{position:relative;border-radius:clamp(12px,2vw,20px);overflow:hidden;background:#08080d;aspect-ratio:16/9;width:100%;max-width:1100px;box-shadow:0 16px 48px rgba(0,0,0,.4)}
 .vc video{width:100%;height:100%;object-fit:cover;transition:opacity .6s}
-.vc .vo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .4s;pointer-events:none}
+.vc .vo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .4s;pointer-events:none}
 .vc:not(.playing) .vo{opacity:1}
 .vc .vp{width:clamp(44px,6vw,68px);height:clamp(44px,6vw,68px);border:1.5px solid rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);background:rgba(0,0,0,.2)}
 .vc .vp svg{fill:rgba(255,255,255,.5);margin-left:2px}
 .vc .vt{position:absolute;bottom:0;left:0;right:0;padding:clamp(14px,3vw,28px);background:linear-gradient(transparent,rgba(0,0,0,.6))}
 .vc .vt h3{font-family:var(--serif);font-size:clamp(16px,2.5vw,26px);font-weight:300}
 .vc .vt span{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg2);margin-top:3px;display:block}
+.vc .vh{font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,.35);margin-top:10px}
 
 /* IMMERSIVE VIDEO EXPAND */
 .vex{position:fixed;inset:0;z-index:8000}
@@ -245,9 +254,10 @@ animation:gr 8s steps(10) infinite}
   .spc{display:none}.spr{margin-top:0}
   .webt{padding:0 12px}
   .wc{border-radius:14px}
-  .vidt{padding:0 12px}
+  .vs{min-height:85vh;padding:0 12px}
   .vc{border-radius:14px}
   .we{display:none}
+  .narr{padding:60px 24px;min-height:80vh}
   .sdiv{padding:70px 0}
   .ctc{padding:60px 20px 30px}
   .ct-links{gap:20px}
@@ -290,6 +300,17 @@ animation:gr 8s steps(10) infinite}
 <div class="driver" id="sec-img"></div>
 
 <main class="content">
+  <section class="narr sec" id="sec-narr">
+    <div class="narr-c">
+      <p class="narr-yr">MMXXV</p>
+      <p class="narr-line">我是一名华南师范大学的学生</p>
+      <p class="narr-line">2025，我开始了 AI 网站的尝试</p>
+      <p class="narr-line">目前我投入在 AI 视觉和听觉的设计</p>
+      <p class="narr-line">包含图片、视频、网站，以及它们的一键式生产</p>
+      <p class="narr-line narr-em">我在探索如何使用 AI 这一时代技术<br>给世界带来有用且美的事物</p>
+    </div>
+  </section>
+
   <section class="sec">
     <div class="shd rv"><div class="sn">01</div><div class="sl"></div><h2 class="st">影 像</h2><p class="ss">GALLERY</p></div>
     <div class="split"><div class="spl" id="spl"></div>
@@ -390,7 +411,7 @@ const isMob=innerWidth<768;
 /* ═══ RENDER 2D ═══ */
 const spl=document.getElementById('spl'),spr=document.getElementById('spr');
 GRID.forEach((d,i)=>{
-  (i%2===0?spl:spr).innerHTML+=`<div class="mi" data-img="${i+FEAT.length}"><img src="${d.s}" alt="${d.t}" loading="lazy"><div class="mo"><h4>${d.t}</h4><span>${d.g}</span></div></div>`;
+  (i%2===0?spl:spr).innerHTML+=`<div class="mi" data-img="${i+FEAT.length}"><img src="${d.s}" alt="${d.t}" loading="lazy"><span class="mh">点击放大</span><div class="mo"><h4>${d.t}</h4><span>${d.g}</span></div></div>`;
 });
 document.querySelectorAll('.mi').forEach(el=>el.addEventListener('click',()=>openLB(+el.dataset.img)));
 
@@ -401,7 +422,7 @@ WEBS.forEach((w,i)=>{
     const ov=document.getElementById('wov');const fr=document.getElementById('wov-frame');
     fr.src=w.u;ov.classList.add('on');document.body.style.overflow='hidden';
   };
-  c.innerHTML=`<img src="${w.p}" alt="${w.t}" loading="eager"><div class="wi"><div class="wn">0${i+1}</div><h3>${w.t} &mdash; ${w.st}</h3><p>${w.d}</p><span class="wb">查看项目 &rarr;</span></div>`;
+  c.innerHTML=`<img src="${w.p}" alt="${w.t}" loading="eager"><div class="wi"><h3>${w.t}</h3><span class="wb">点击查看 &rarr;</span></div>`;
   wt.insertBefore(c,wt.firstElementChild);
 });
 /* Back button for web overlay */
@@ -412,7 +433,7 @@ document.getElementById('wov-back').onclick=()=>{
 
 const vdt=document.getElementById('vdt');
 VIDS.forEach((v,i)=>{
-  vdt.innerHTML+=`<div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="auto"></video><div class="vo"><div class="vp"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div>`;
+  vdt.innerHTML+=`<div class="vs"><div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="auto"></video><div class="vo"><div class="vp"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div><span class="vh">点击播放</span></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div></div>`;
 });
 
 /* Video click → smooth immersive expand */
@@ -631,20 +652,31 @@ if(!isMob){
   if(webCards.length>1){const track=document.getElementById('wt');const dist=()=>track.scrollWidth-innerWidth+96;
     if(dist()>10)gsap.to(track,{x:()=>-dist(),ease:'none',scrollTrigger:{trigger:'.webw',start:'top top',end:()=>'+='+dist(),pin:true,scrub:1,invalidateOnRefresh:true,anticipatePin:1}});}
 }
-/* ALL devices: video cards — pin one at a time, auto-play, smooth entry */
-document.querySelectorAll('.vc').forEach((card,i)=>{
-  const vid=card.querySelector('video');
-  gsap.set(card,{opacity:0,y:50,scale:.94});
-  ScrollTrigger.create({trigger:card,start:'top 70%',end:'bottom 30%',
-    onEnter:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:.9,ease:'power3.out'});vid.play().catch(()=>{});card.classList.add('playing');},
-    onLeave:()=>{gsap.to(card,{opacity:.2,scale:.96,duration:.4,ease:'power2.in'});vid.pause();card.classList.remove('playing');},
-    onEnterBack:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:.6,ease:'power2.out'});vid.play().catch(()=>{});card.classList.add('playing');},
-    onLeaveBack:()=>{gsap.to(card,{opacity:0,y:40,scale:.94,duration:.4,ease:'power2.in'});vid.pause();card.classList.remove('playing');}
+/* ALL devices: video cards — one at a time, full viewport trigger */
+document.querySelectorAll('.vs').forEach(section=>{
+  const card=section.querySelector('.vc');const vid=card.querySelector('video');
+  gsap.set(card,{opacity:0,y:60,scale:.88});
+  ScrollTrigger.create({trigger:section,start:'top 60%',end:'bottom 40%',
+    onEnter:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:1,ease:'power3.out'});vid.play().catch(()=>{});card.classList.add('playing');},
+    onLeave:()=>{gsap.to(card,{opacity:0,scale:.9,duration:.5,ease:'power2.in'});vid.pause();card.classList.remove('playing');},
+    onEnterBack:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:.7,ease:'power2.out'});vid.play().catch(()=>{});card.classList.add('playing');},
+    onLeaveBack:()=>{gsap.to(card,{opacity:0,y:50,scale:.88,duration:.5,ease:'power2.in'});vid.pause();card.classList.remove('playing');}
   });
 });
 /* Web project cards — smooth entry */
 document.querySelectorAll('.wc').forEach(card=>{
-  gsap.from(card,{opacity:0,y:60,scale:.94,duration:1,ease:'power3.out',scrollTrigger:{trigger:card,start:'top 85%'}});
+  gsap.set(card,{opacity:0,y:50,scale:.94});
+  ScrollTrigger.create({trigger:card,start:'top 85%',
+    onEnter:()=>gsap.to(card,{opacity:1,y:0,scale:1,duration:1,ease:'power3.out'}),
+    onEnterBack:()=>gsap.to(card,{opacity:1,y:0,scale:1,duration:.7,ease:'power2.out'})
+  });
+});
+/* Narrative section — staggered text reveal */
+document.querySelectorAll('.narr-line').forEach((line,i)=>{
+  gsap.set(line,{opacity:0,y:28});
+  ScrollTrigger.create({trigger:'.narr',start:'top 65%',
+    onEnter:()=>gsap.to(line,{opacity:1,y:0,duration:1.3,delay:i*.3,ease:'power3.out'})
+  });
 });
 
 /* Outro */
