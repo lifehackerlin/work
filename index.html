@@ -224,6 +224,15 @@ animation:gr 8s steps(10) infinite}
 #lbp{left:clamp(8px,2vw,16px)}#lbn{right:clamp(8px,2vw,16px)}
 #lbi{position:absolute;bottom:clamp(12px,3vh,22px);left:50%;transform:translateX(-50%);font-size:11px;color:var(--fg3);letter-spacing:.2em}
 
+/* WEB PROJECT IFRAME OVERLAY */
+.wov{position:fixed;inset:0;z-index:9200;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .5s var(--ease)}
+.wov.on{opacity:1;pointer-events:auto}
+.wov iframe{width:100%;height:100%;border:none}
+.wov-back{position:fixed;top:clamp(12px,2vw,20px);left:clamp(12px,2vw,20px);z-index:9201;display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(7,7,11,.85);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:100px;color:var(--fg2);font-size:11px;letter-spacing:.12em;cursor:pointer;transition:all .3s var(--ease);opacity:0;pointer-events:none}
+.wov.on .wov-back{opacity:1;pointer-events:auto}
+.wov-back:hover{border-color:rgba(255,255,255,.2);color:var(--fg);background:rgba(7,7,11,.95)}
+.wov-back svg{width:14px;height:14px;fill:currentColor}
+
 .rv{opacity:0;transform:translateY(40px)}
 
 /* ═══ RESPONSIVE ═══ */
@@ -235,15 +244,15 @@ animation:gr 8s steps(10) infinite}
   .lk{display:none}.mbtn{display:flex}
   #nav{padding:16px 20px}
   .g3l{left:20px}.g3i{left:20px;bottom:32px}
-  .shd{padding:80px 20px 32px}
+  .shd{padding:70px 20px 28px}
   .split{grid-template-columns:1fr;padding:0 20px}
   .spc{display:none}.spr{margin-top:0}
   .webw{overflow:visible}
-  .webt{flex-direction:column;gap:0;padding:0;min-height:auto}
-  .wc{width:100%;aspect-ratio:16/10;border-radius:0;transform-style:preserve-3d}
+  .webt{flex-direction:column;gap:0;padding:0 16px;min-height:auto}
+  .wc{width:100%;aspect-ratio:16/10;border-radius:16px;transform-style:preserve-3d;margin-bottom:clamp(50px,10vh,80px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .vidw{overflow:visible}
-  .vidt{flex-direction:column;gap:0;padding:0;min-height:auto}
-  .vc{width:100%;height:75vh;aspect-ratio:auto;border-radius:0;transform-style:preserve-3d}
+  .vidt{flex-direction:column;gap:0;padding:0 16px;min-height:auto}
+  .vc{width:100%;height:auto;aspect-ratio:16/9;border-radius:16px;transform-style:preserve-3d;margin-bottom:clamp(60px,12vh,100px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .we{display:none}
   .sdiv{padding:70px 0}
   .ctc{padding:60px 20px 30px}
@@ -258,7 +267,7 @@ animation:gr 8s steps(10) infinite}
 </head>
 <body class="locked">
 
-<div id="loader"><h2>LIN YU</h2><p id="lpct" style="font-size:11px;letter-spacing:.3em;color:var(--fg3);margin-top:16px">0%</p><div class="bar"><div id="lf"></div></div></div>
+<div id="loader"><h2>LIN YU</h2><p id="lpct" style="font-size:12px;letter-spacing:.3em;color:var(--fg2);margin-top:18px;font-family:var(--sans)">0%</p><div class="bar"><div id="lf"></div></div><p style="font-size:8px;letter-spacing:.2em;color:var(--fg3);margin-top:14px">LOADING ASSETS</p></div>
 <canvas id="gl"></canvas>
 <div class="grain"></div>
 <div class="cur" id="cr"></div><div class="cdd" id="cdd"></div>
@@ -345,6 +354,8 @@ animation:gr 8s steps(10) infinite}
   <div class="qrm-c"><img src="works/img/wechat-qr.jpg" alt="WeChat QR"><p>扫码添加微信</p></div>
 </div>
 
+<div class="wov" id="wov"><button class="wov-back" id="wov-back"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>返回作品集</button><iframe id="wov-frame"></iframe></div>
+
 <div id="lb"><div class="lx" id="lbx">&times;</div><div id="lbc"></div><div class="la" id="lbp">&lsaquo;</div><div class="la" id="lbn">&rsaquo;</div><div id="lbi"></div></div>
 
 <script>
@@ -392,10 +403,18 @@ document.querySelectorAll('.mi').forEach(el=>el.addEventListener('click',()=>ope
 const wt=document.getElementById('wt');
 WEBS.forEach((w,i)=>{
   const c=document.createElement('div');c.className='wc';
-  c.onclick=()=>window.open(w.u,'_blank');
-  c.innerHTML=`<img src="${w.p}" alt="${w.t}" loading="eager" onerror="this.style.display='none'"><div class="wi"><div class="wn">0${i+1}</div><h3>${w.t} &mdash; ${w.st}</h3><p>${w.d}</p><span class="wb">查看项目 &rarr;</span></div>`;
+  c.onclick=()=>{
+    const ov=document.getElementById('wov');const fr=document.getElementById('wov-frame');
+    fr.src=w.u;ov.classList.add('on');document.body.style.overflow='hidden';
+  };
+  c.innerHTML=`<img src="${w.p}" alt="${w.t}" loading="eager"><div class="wi"><div class="wn">0${i+1}</div><h3>${w.t} &mdash; ${w.st}</h3><p>${w.d}</p><span class="wb">查看项目 &rarr;</span></div>`;
   wt.insertBefore(c,wt.firstElementChild);
 });
+/* Back button for web overlay */
+document.getElementById('wov-back').onclick=()=>{
+  const ov=document.getElementById('wov');ov.classList.remove('on');
+  document.getElementById('wov-frame').src='';document.body.style.overflow='';
+};
 
 const vdt=document.getElementById('vdt');
 VIDS.forEach((v,i)=>{
@@ -618,10 +637,10 @@ gsap.registerPlugin(ScrollTrigger);
 document.querySelectorAll('.rv').forEach(el=>{gsap.to(el,{opacity:1,y:0,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});});
 document.querySelectorAll('.mi').forEach(el=>{gsap.from(el,{opacity:0,y:35,duration:.9,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 96%'}});});
 document.querySelectorAll('[data-sdiv]').forEach(el=>{gsap.to(el,{width:180,duration:1.5,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 80%'}});});
-/* 3D section divider shapes */
-document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{rotationX:120,rotationY:240,scale:.15,opacity:0,duration:2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
-/* 3D perspective entry for sections — dramatic */
-document.querySelectorAll('#sec-web, #sec-vid').forEach(el=>{gsap.from(el,{rotationX:8,y:120,opacity:0,scale:.95,transformPerspective:1000,transformOrigin:'center top',duration:1.6,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
+/* Section divider line + shape */
+document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{scale:0,opacity:0,rotation:180,duration:1.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
+/* Section entry — smooth fade-slide, no heavy 3D */
+document.querySelectorAll('#sec-web .shd, #sec-vid .shd').forEach(el=>{gsap.from(el,{y:60,opacity:0,duration:1.3,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});});
 
 if(!isMob){
   const track=document.getElementById('wt');const dist=()=>track.scrollWidth-innerWidth+96;
@@ -629,27 +648,31 @@ if(!isMob){
   const vtrack=document.getElementById('vdt');const vdist=()=>vtrack.scrollWidth-innerWidth+96;
   if(vdist()>10)gsap.to(vtrack,{x:()=>-vdist(),ease:'none',scrollTrigger:{trigger:'.vidw',start:'top top',end:()=>'+='+vdist(),pin:true,scrub:1,invalidateOnRefresh:true,anticipatePin:1}});
 }
-/* Mobile: full-screen pinned cards — one at a time */
+/* Mobile: elegant pinned cards — one at a time with smooth transitions */
 if(isMob){
-  /* Web project cards: pin + 3D entry */
+  /* Web project cards: smooth reveal */
   document.querySelectorAll('.wc').forEach(card=>{
-    ScrollTrigger.create({trigger:card,start:'top 8%',end:'+=90%',pin:true,pinSpacing:true,
-      onEnter:()=>{gsap.from(card,{scale:.88,opacity:0,rotationX:15,transformPerspective:800,transformOrigin:'center center',duration:.9,ease:'power3.out'});},
-      onEnterBack:()=>{gsap.from(card,{scale:.88,opacity:0,duration:.6,ease:'power2.out'});}
+    gsap.set(card,{opacity:0,y:60,scale:.92});
+    ScrollTrigger.create({trigger:card,start:'top 80%',end:'bottom 20%',
+      onEnter:()=>gsap.to(card,{opacity:1,y:0,scale:1,duration:1,ease:'power3.out'}),
+      onLeave:()=>gsap.to(card,{opacity:.3,scale:.95,duration:.5,ease:'power2.in'}),
+      onEnterBack:()=>gsap.to(card,{opacity:1,y:0,scale:1,duration:.7,ease:'power2.out'}),
+      onLeaveBack:()=>gsap.to(card,{opacity:0,y:40,scale:.95,duration:.5,ease:'power2.in'})
     });
   });
-  /* Video cards: pin + auto-play + 3D entry */
+  /* Video cards: smooth reveal + auto-play */
   document.querySelectorAll('.vc').forEach(card=>{
     const vid=card.querySelector('video');
-    ScrollTrigger.create({trigger:card,start:'top 8%',end:'+=100%',pin:true,pinSpacing:true,
-      onEnter:()=>{vid.play().catch(()=>{});card.classList.add('playing');gsap.from(card,{scale:.88,opacity:0,rotationX:15,transformPerspective:800,transformOrigin:'center center',duration:.9,ease:'power3.out'});},
-      onLeave:()=>{vid.pause();card.classList.remove('playing');},
-      onEnterBack:()=>{vid.play().catch(()=>{});card.classList.add('playing');gsap.from(card,{scale:.88,opacity:0,duration:.6,ease:'power2.out'});},
-      onLeaveBack:()=>{vid.pause();card.classList.remove('playing');}
+    gsap.set(card,{opacity:0,y:80,scale:.9});
+    ScrollTrigger.create({trigger:card,start:'top 75%',end:'bottom 25%',
+      onEnter:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:1.1,ease:'power3.out'});vid.play().catch(()=>{});card.classList.add('playing');},
+      onLeave:()=>{gsap.to(card,{opacity:.3,scale:.95,duration:.5,ease:'power2.in'});vid.pause();card.classList.remove('playing');},
+      onEnterBack:()=>{gsap.to(card,{opacity:1,y:0,scale:1,duration:.7,ease:'power2.out'});vid.play().catch(()=>{});card.classList.add('playing');},
+      onLeaveBack:()=>{gsap.to(card,{opacity:0,y:60,scale:.92,duration:.5,ease:'power2.in'});vid.pause();card.classList.remove('playing');}
     });
   });
-  /* Mobile 3D section title reveals — dramatic */
-  document.querySelectorAll('.shd').forEach(el=>{gsap.from(el,{rotationX:12,y:80,opacity:0,scale:.9,transformPerspective:800,transformOrigin:'center bottom',duration:1.4,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}});});
+  /* Mobile section title reveals */
+  document.querySelectorAll('.shd').forEach(el=>{gsap.from(el,{y:50,opacity:0,duration:1.2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%'}});});
 }
 
 /* Outro */
@@ -677,13 +700,24 @@ const mbtn=document.getElementById('mbtn'),mmenu=document.getElementById('mmenu'
 mbtn.onclick=()=>{mbtn.classList.toggle('open');mmenu.classList.toggle('open');};
 document.querySelectorAll('[data-ms]').forEach(a=>{a.onclick=e=>{e.preventDefault();mbtn.classList.remove('open');mmenu.classList.remove('open');navTo(a.dataset.ms);};});
 
-/* ═══ OPENING — real asset preloading ═══ */
-const preloadSrcs=[...FEAT.map(f=>f.s),...WEBS.map(w=>w.p),...GRID.slice(0,6).map(g=>g.s)];
-let ldDone=0;const ldTotal=preloadSrcs.length;
-function ldUp(){ldDone++;const pct=Math.round(ldDone/ldTotal*100);document.getElementById('lf').style.width=pct+'%';document.getElementById('lpct').textContent=pct+'%';if(ldDone>=ldTotal)setTimeout(go,300);}
-preloadSrcs.forEach(src=>{const img=new Image();img.onload=img.onerror=ldUp;img.src=src;});
-/* Fallback: if loading takes too long, start anyway */
-setTimeout(()=>{if(ldDone<ldTotal){document.getElementById('lf').style.width='100%';document.getElementById('lpct').textContent='100%';setTimeout(go,200);}},8000);
+/* ═══ OPENING — real asset preloading (images + video first frames) ═══ */
+const preloadImgs=[...FEAT.map(f=>f.s),...WEBS.map(w=>w.p),...GRID.map(g=>g.s)];
+const preloadVids=VIDS.map(v=>v.s);
+const ldTotal=preloadImgs.length+preloadVids.length;
+let ldDone=0,goFired=false;
+function ldUp(){
+  ldDone++;const pct=Math.min(Math.round(ldDone/ldTotal*100),100);
+  document.getElementById('lf').style.width=pct+'%';
+  document.getElementById('lpct').textContent=pct+'%';
+  if(ldDone>=ldTotal&&!goFired){goFired=true;setTimeout(go,400);}
+}
+/* Preload all images */
+preloadImgs.forEach(src=>{const img=new Image();img.onload=img.onerror=ldUp;img.src=src;});
+/* Preload video first frames */
+preloadVids.forEach(src=>{const v=document.createElement('video');v.preload='auto';v.muted=true;v.playsInline=true;
+  v.onloadeddata=v.onerror=ldUp;v.src=src;});
+/* Fallback: if loading takes too long on slow connection, start anyway */
+setTimeout(()=>{if(!goFired){goFired=true;document.getElementById('lf').style.width='100%';document.getElementById('lpct').textContent='100%';setTimeout(go,200);}},15000);
 function go(){
   document.getElementById('loader').classList.add('hide');setTimeout(()=>document.getElementById('loader').style.display='none',800);
   /* Phase 1: Particles appear from all directions */
