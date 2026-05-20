@@ -117,9 +117,10 @@ animation:gr 8s steps(10) infinite}
 .shd .ss{font-size:9px;letter-spacing:.4em;text-transform:uppercase;color:var(--fg3);margin-top:5px}
 
 /* SECTION DIVIDER — 3D transition zone */
-.sdiv{padding:clamp(80px,14vw,160px) 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;position:relative}
-.sdiv-l{width:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
-.sdiv-shape{width:36px;height:36px;border:1px solid rgba(176,136,64,.06);transform-style:preserve-3d;animation:sdivRot 18s linear infinite}
+.sdiv{padding:clamp(100px,18vw,200px) 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;position:relative}
+.sdiv::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(176,136,64,.02) 0%,transparent 70%);pointer-events:none}
+.sdiv-l{width:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+.sdiv-shape{width:40px;height:40px;border:1px solid rgba(176,136,64,.08);transform-style:preserve-3d;animation:sdivRot 18s linear infinite}
 @keyframes sdivRot{to{transform:perspective(200px) rotateX(360deg) rotateY(360deg)}}
 
 /* NARRATIVE */
@@ -442,7 +443,7 @@ document.getElementById('wov-back').onclick=()=>{
 
 const vdt=document.getElementById('vdt');
 VIDS.forEach((v,i)=>{
-  vdt.innerHTML+=`<div class="vs"><div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="auto"></video><div class="vo"><div class="vp"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div><span class="vh">点击播放</span></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div></div>`;
+  vdt.innerHTML+=`<div class="vs"><div class="vc" data-vi="${i}"><video src="${v.s}" muted loop playsinline preload="metadata"></video><div class="vo"><div class="vp"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 21,12 6,21"/></svg></div><span class="vh">点击播放</span></div><div class="vt"><h3>${v.t}</h3><span>${v.sub}</span></div></div></div>`;
 });
 
 /* Video click → smooth immersive expand */
@@ -650,10 +651,23 @@ gsap.registerPlugin(ScrollTrigger);
 document.querySelectorAll('.rv').forEach(el=>{gsap.to(el,{opacity:1,y:0,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});});
 document.querySelectorAll('.mi').forEach(el=>{gsap.from(el,{opacity:0,y:35,duration:.9,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 96%'}});});
 document.querySelectorAll('[data-sdiv]').forEach(el=>{gsap.to(el,{width:180,duration:1.5,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 80%'}});});
-/* Section divider line + shape */
-document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{scale:0,opacity:0,rotation:180,duration:1.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
-/* Section entry — smooth fade-slide, no heavy 3D */
-document.querySelectorAll('#sec-web .shd, #sec-vid .shd').forEach(el=>{gsap.from(el,{y:60,opacity:0,duration:1.3,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});});
+/* Section divider — dramatic entrance */
+document.querySelectorAll('.sdiv').forEach(el=>{
+  gsap.from(el,{opacity:0,duration:1.2,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 88%'}});
+});
+document.querySelectorAll('.sdiv-shape').forEach(el=>{gsap.from(el,{scale:0,opacity:0,rotation:180,duration:2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});});
+/* Section header — staggered reveal */
+document.querySelectorAll('.shd').forEach(shd=>{
+  const sn=shd.querySelector('.sn'),sl=shd.querySelector('.sl'),st=shd.querySelector('.st'),ss=shd.querySelector('.ss');
+  if(sn)gsap.from(sn,{x:-40,opacity:0,duration:1.2,ease:'power3.out',scrollTrigger:{trigger:shd,start:'top 88%'}});
+  if(sl)gsap.from(sl,{width:0,duration:1.4,ease:'power2.out',scrollTrigger:{trigger:shd,start:'top 85%'}});
+  if(st)gsap.from(st,{y:30,opacity:0,duration:1,delay:.15,ease:'power3.out',scrollTrigger:{trigger:shd,start:'top 85%'}});
+  if(ss)gsap.from(ss,{y:15,opacity:0,duration:.8,delay:.3,ease:'power3.out',scrollTrigger:{trigger:shd,start:'top 85%'}});
+});
+/* Section content areas — smooth reveal */
+document.querySelectorAll('.split, .webt, .vidt').forEach(el=>{
+  gsap.from(el,{opacity:0,y:40,duration:1.2,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}});
+});
 
 /* Desktop: horizontal scroll for web projects */
 if(!isMob){
@@ -688,6 +702,16 @@ document.querySelectorAll('.narr-line').forEach((line,i)=>{
   });
 });
 
+/* Video auto-play backup — IntersectionObserver for mobile reliability */
+const vidObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    const vid=e.target.querySelector('video');if(!vid)return;
+    if(e.isIntersecting){vid.play().catch(()=>{});e.target.querySelector('.vc')?.classList.add('playing');}
+    else{vid.pause();e.target.querySelector('.vc')?.classList.remove('playing');}
+  });
+},{threshold:.3});
+document.querySelectorAll('.vs').forEach(s=>vidObs.observe(s));
+
 /* Outro */
 const oStars=document.getElementById('ostars');let sb='';
 for(let i=0;i<80;i++){const x=Math.random()*100,y=Math.random()*100,s=Math.random()*1.2+.4,o=Math.random()*.2+.03;sb+=`radial-gradient(${s}px ${s}px at ${x}% ${y}%,rgba(255,255,255,${o}),transparent)${i<79?',':''}`;}
@@ -704,7 +728,7 @@ if(document.getElementById('cr')){const cr=document.getElementById('cr');documen
 
 /* Nav */
 function navTo(s){
-  if(s==='sec-img'){window.scrollTo({top:H,behavior:'smooth'});return;}
+  if(s==='sec-img'){document.getElementById('sec-img').scrollIntoView({behavior:'smooth'});return;}
   const t=document.getElementById(s);if(t)t.scrollIntoView({behavior:'smooth'});
 }
 document.querySelectorAll('.lk a').forEach(a=>{a.onclick=e=>{e.preventDefault();navTo(a.dataset.s);};});
@@ -713,10 +737,9 @@ const mbtn=document.getElementById('mbtn'),mmenu=document.getElementById('mmenu'
 mbtn.onclick=()=>{mbtn.classList.toggle('open');mmenu.classList.toggle('open');};
 document.querySelectorAll('[data-ms]').forEach(a=>{a.onclick=e=>{e.preventDefault();mbtn.classList.remove('open');mmenu.classList.remove('open');navTo(a.dataset.ms);};});
 
-/* ═══ OPENING — real asset preloading (images + video first frames) ═══ */
-const preloadImgs=[...FEAT.map(f=>f.s),...WEBS.map(w=>w.p),...GRID.map(g=>g.s)];
-const preloadVids=VIDS.map(v=>v.s);
-const ldTotal=preloadImgs.length+preloadVids.length;
+/* ═══ OPENING — lightweight preloading (only essential images) ═══ */
+const preloadImgs=[...FEAT.map(f=>f.s),...WEBS.map(w=>w.p)];
+const ldTotal=preloadImgs.length;
 let ldDone=0,goFired=false;
 function ldUp(){
   ldDone++;const pct=Math.min(Math.round(ldDone/ldTotal*100),100);
@@ -724,13 +747,9 @@ function ldUp(){
   document.getElementById('lpct').textContent=pct+'%';
   if(ldDone>=ldTotal&&!goFired){goFired=true;setTimeout(go,400);}
 }
-/* Preload all images */
 preloadImgs.forEach(src=>{const img=new Image();img.onload=img.onerror=ldUp;img.src=src;});
-/* Preload video first frames */
-preloadVids.forEach(src=>{const v=document.createElement('video');v.preload='auto';v.muted=true;v.playsInline=true;
-  v.onloadeddata=v.onerror=ldUp;v.src=src;});
-/* Fallback: if loading takes too long on slow connection, start anyway */
-setTimeout(()=>{if(!goFired){goFired=true;document.getElementById('lf').style.width='100%';document.getElementById('lpct').textContent='100%';setTimeout(go,200);}},15000);
+/* Fallback: 8s timeout for slow connections */
+setTimeout(()=>{if(!goFired){goFired=true;document.getElementById('lf').style.width='100%';document.getElementById('lpct').textContent='100%';setTimeout(go,200);}},8000);
 function go(){
   document.getElementById('loader').classList.add('hide');setTimeout(()=>document.getElementById('loader').style.display='none',800);
   /* Phase 1: Particles appear from all directions */
