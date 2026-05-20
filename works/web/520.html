@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5">
+<title>520</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{--sab:env(safe-area-inset-bottom);--sat:env(safe-area-inset-top)}
+
+html{
+  overscroll-behavior:none;
+  overflow-x:hidden;
+  scrollbar-width:none;
+}
+html::-webkit-scrollbar{display:none}
+body{
+  background:#030308;color:#fff;
+  font-family:'Inter',system-ui,sans-serif;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* === CANVAS === */
+#c{position:fixed;inset:0;z-index:1}
+
+/* === VIGNETTE === */
+.vignette{
+  position:fixed;inset:0;z-index:98;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 40%,rgba(0,0,0,.55) 100%);
+}
+
+/* === GRAIN === */
+.grain{
+  position:fixed;inset:0;z-index:100;
+  pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:128px;
+}
+
+/* === GLOW ORBS === */
+.orb{
+  position:fixed;border-radius:50%;
+  pointer-events:none;z-index:0;
+  filter:blur(120px);
+  opacity:.18;
+  transition:background 2.5s ease, opacity 1.5s ease;
+}
+#orb1{width:55vmax;height:55vmax;top:-15%;left:-15%;background:#0a0a30}
+#orb2{width:42vmax;height:42vmax;bottom:-18%;right:-12%;background:#08082a}
+#orb3{width:35vmax;height:35vmax;top:45%;left:55%;transform:translate(-50%,-50%);background:#0a0820}
+
+/* === CURSOR === */
+.cur{position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:difference;border-radius:50%}
+.cur-d{width:6px;height:6px;background:#fff}
+.cur-r{width:48px;height:48px;border:1px solid rgba(255,255,255,.35);transition:all .3s cubic-bezier(.16,1,.3,1)}
+.cur-r.h{width:72px;height:72px;border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.03)}
+
+/* === PROGRESS === */
+.prog{position:fixed;top:0;left:0;width:100%;height:1px;z-index:999;transform-origin:left;opacity:.2;
+  background:linear-gradient(90deg,#667eea,#ff3366,#fbbf24);background-size:300% 100%}
+
+/* === OVERLAY (fixed, driven by scroll progress) === */
+#overlay{
+  position:fixed;inset:0;z-index:50;
+  pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Sections */
+.ov{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+  opacity:0;
+  will-change:opacity,transform;
+}
+.ov-hero{gap:0}
+.ov-hero .ey{
+  font-size:11px;letter-spacing:clamp(4px,1.5vw,10px);
+  text-transform:uppercase;color:rgba(255,255,255,.2);
+  font-weight:300;
+}
+.ov-hero .big{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(14px,1.8vw,22px);
+  font-weight:400;font-style:italic;
+  color:rgba(255,255,255,.1);
+  margin-top:12px;letter-spacing:1px;
+}
+
+.ov-mid{gap:0;padding:0 24px}
+.ov-mid h2{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(32px,5vw,72px);
+  font-weight:400;
+  text-align:center;
+  line-height:1.3;
+  letter-spacing:-1px;
+  color:rgba(255,255,255,.85);
+  will-change:transform;
+}
+.ov-mid h2 em{font-style:italic;color:rgba(255,255,255,.35)}
+.ov-mid.heart-phase h2{text-shadow:0 0 60px rgba(255,45,85,.12),0 0 120px rgba(255,45,85,.06)}
+.ov-mid.sphere-phase h2{text-shadow:0 0 60px rgba(139,92,246,.12),0 0 120px rgba(139,92,246,.06)}
+
+.ov-end{gap:16px}
+.ov-end .fin{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(64px,14vw,200px);
+  font-weight:400;
+  letter-spacing:-4px;
+  color:#fff;
+  line-height:.9;
+  text-align:center;
+  transition:text-shadow 1s;
+}
+.ov-end.glow-active .fin{
+  text-shadow:
+    0 0 30px rgba(255,200,60,.35),
+    0 0 60px rgba(255,180,40,.2),
+    0 0 120px rgba(255,160,30,.12),
+    0 0 200px rgba(255,140,20,.06);
+  animation:finPulse 3s ease-in-out infinite;
+}
+@keyframes finPulse{
+  0%,100%{text-shadow:0 0 30px rgba(255,200,60,.3),0 0 60px rgba(255,180,40,.15),0 0 120px rgba(255,160,30,.08)}
+  50%{text-shadow:0 0 50px rgba(255,200,60,.5),0 0 100px rgba(255,180,40,.3),0 0 160px rgba(255,160,30,.15),0 0 240px rgba(255,140,20,.08)}
+}
+.ov-end .sub{
+  font-size:clamp(10px,1.2vw,14px);
+  letter-spacing:clamp(6px,1.2vw,14px);
+  text-transform:uppercase;
+  color:rgba(255,255,255,.12);
+  font-weight:200;
+  transition:color 1s;
+}
+.ov-end.glow-active .sub{color:rgba(255,200,100,.2)}
+
+/* SCROLL INDICATOR */
+.scroll-hint{
+  position:fixed;bottom:clamp(20px,4vh,40px);
+  bottom:calc(clamp(20px,4vh,40px) + var(--sab));
+  left:50%;transform:translateX(-50%);
+  z-index:200;display:flex;flex-direction:column;
+  align-items:center;gap:8px;
+  mix-blend-mode:difference;
+  transition:opacity .8s;
+}
+.scroll-hint span{
+  font-size:9px;letter-spacing:4px;text-transform:uppercase;
+  color:rgba(255,255,255,.25);font-weight:300;
+}
+.scroll-hint-line{
+  width:1px;height:32px;background:rgba(255,255,255,.1);
+  position:relative;overflow:hidden;
+}
+.scroll-hint-line::after{
+  content:'';position:absolute;top:0;left:0;width:100%;height:40%;
+  background:#fff;animation:sh 2s ease-in-out infinite;
+}
+@keyframes sh{0%{top:-40%}100%{top:100%}}
+
+/* SOUND BTN */
+.snd{
+  position:fixed;bottom:clamp(20px,4vh,40px);right:clamp(20px,3vw,40px);
+  bottom:calc(clamp(20px,4vh,40px) + var(--sab));
+  z-index:200;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;pointer-events:all;
+  transition:all .3s;
+}
+.snd:hover,.snd:active{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.05)}
+.snd-bar{width:2px;background:#fff;border-radius:1px;opacity:.3;transition:opacity .3s}
+.snd.on .snd-bar{opacity:.8;animation:sb .6s ease infinite alternate}
+.snd-bar:nth-child(1){height:6px;animation-delay:0s}
+.snd-bar:nth-child(2){height:12px;animation-delay:.15s}
+.snd-bar:nth-child(3){height:8px;animation-delay:.3s}
+.snd-bar:nth-child(4){height:14px;animation-delay:.1s}
+@keyframes sb{0%{height:3px}100%{height:16px}}
+
+/* BRAND */
+.brand{
+  position:fixed;top:clamp(16px,3vh,32px);left:clamp(16px,3vw,40px);
+  top:calc(clamp(16px,3vh,32px) + var(--sat));
+  z-index:200;
+  font-family:'Instrument Serif',serif;
+  font-size:16px;font-weight:400;
+  color:rgba(255,255,255,.2);
+  letter-spacing:1px;
+  mix-blend-mode:difference;
+}
+
+/* SPACER */
+#spacer{width:100%;pointer-events:none}
+
+/* SPARKLES */
+.sparkle-pool{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.sparkle{
+  position:absolute;
+  width:2px;height:2px;
+  background:white;
+  border-radius:50%;
+  opacity:0;
+  will-change:transform,opacity;
+}
+
+/* SHOOTING STARS */
+.star-pool{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.shooting-star{
+  position:absolute;
+  width:0;height:1px;
+  background:linear-gradient(90deg,rgba(255,255,255,.6),rgba(255,255,255,.1),transparent);
+  opacity:0;
+  will-change:transform,opacity,width;
+}
+
+/* PRELOADER */
+#pre{
+  position:fixed;inset:0;z-index:10000;background:#030308;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+}
+#pre.out{animation:preOut 1.4s cubic-bezier(.76,0,.24,1) forwards}
+@keyframes preOut{
+  0%{clip-path:inset(0)}
+  100%{clip-path:inset(0 0 100% 0)}
+}
+.pre-n{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(72px,14vw,120px);
+  font-weight:400;
+  color:#fff;opacity:0;
+  transform:translateY(30px);
+  transition:all .5s cubic-bezier(.16,1,.3,1);
+}
+.pre-n.s{opacity:1;transform:translateY(0)}
+.pre-n.h{opacity:0;transform:translateY(-30px)}
+.pre-bar{
+  width:48px;height:1px;
+  background:rgba(255,255,255,.1);
+  margin-top:32px;position:relative;overflow:hidden;
+}
+.pre-bar::after{
+  content:'';position:absolute;left:0;top:0;height:100%;width:0;
+  background:#fff;transition:width .6s cubic-bezier(.16,1,.3,1);
+}
+.pre-bar.f::after{width:100%}
+
+/* MOBILE */
+@media(max-width:768px){
+  body{cursor:auto}
+  .cur{display:none!important}
+  .ov-mid h2{font-size:clamp(24px,7vw,48px)}
+  .ov-end .fin{letter-spacing:-2px}
+  .orb{filter:blur(80px);opacity:.12}
+}
+@media(max-width:380px){
+  .ov-mid h2{font-size:22px}
+  .ov-end .fin{font-size:56px;letter-spacing:-1px}
+  .ov-end .sub{font-size:9px;letter-spacing:3px}
+}
+@media(max-height:500px)and(orientation:landscape){
+  .scroll-hint{display:none}
+  .ov-end .fin{font-size:clamp(48px,10vw,100px)}
+}
+</style>
+</head>
+<body>
+
+<!-- PRELOADER -->
+<div id="pre"><div class="pre-n" id="pn">5</div><div class="pre-bar" id="pb"></div></div>
+
+<!-- WEBGL -->
+<canvas id="c"></canvas>
+
+<!-- GLOW ORBS -->
+<div class="orb" id="orb1"></div>
+<div class="orb" id="orb2"></div>
+<div class="orb" id="orb3"></div>
+
+<!-- VIGNETTE -->
+<div class="vignette"></div>
+
+<!-- GRAIN -->
+<div class="grain"></div>
+
+<!-- SPARKLES POOL -->
+<div class="sparkle-pool" id="sparklePool"></div>
+
+<!-- SHOOTING STARS POOL -->
+<div class="star-pool" id="starPool"></div>
+
+<!-- CURSOR -->
+<div class="cur cur-d" id="cd"></div>
+<div class="cur cur-r" id="cr"></div>
+
+<!-- PROGRESS -->
+<div class="prog" id="prog"></div>
+
+<!-- BRAND -->
+<div class="brand">520</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="ov ov-hero" id="ovHero">
+    <div class="ey">May Twenty</div>
+    <div class="big">a digital love letter</div>
+  </div>
+  <div class="ov ov-mid heart-phase" id="ovMid1">
+    <h2>Three numbers.<br><em>One heartbeat.</em></h2>
+  </div>
+  <div class="ov ov-mid sphere-phase" id="ovMid2">
+    <h2>Across every<br><em>dimension.</em></h2>
+  </div>
+  <div class="ov ov-end" id="ovEnd">
+    <div class="fin">520</div>
+    <div class="sub">Forever</div>
+  </div>
+</div>
+
+<!-- SCROLL HINT -->
+<div class="scroll-hint" id="shint">
+  <span>Scroll</span>
+  <div class="scroll-hint-line"></div>
+</div>
+
+<!-- SOUND -->
+<div class="snd" id="snd">
+  <div class="snd-bar"></div><div class="snd-bar"></div><div class="snd-bar"></div><div class="snd-bar"></div>
+</div>
+
+<!-- SCROLL SPACER -->
+<div id="spacer"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (('ontouchstart' in window) && window.innerWidth < 1024);
+const PARTICLE_COUNT = IS_MOBILE ? 3000 : 8000;
+const SCROLL_PAGES = 6;
+const CAM_Z = IS_MOBILE ? 40 : 35;
+const TEXT_SCALE = IS_MOBILE ? 28 : 32;
+const SPHERE_R = IS_MOBILE ? 9 : 11;
+const DPR = Math.min(window.devicePixelRatio, IS_MOBILE ? 1.5 : 2);
+
+// ─── PHASE BOUNDARIES (single source of truth) ─────
+const PH = {
+  // text → heart morph
+  TH_START: 0.10, TH_END: 0.28,
+  // heart → sphere morph
+  HS_START: 0.44, HS_END: 0.60,
+  // sphere → text morph
+  ST_START: 0.76, ST_END: 0.92,
+  // overlay timing
+  HERO_OUT: 0.08,  HERO_GONE: 0.16,
+  MID1_IN: 0.20,   MID1_PEAK: 0.28,  MID1_OUT: 0.36, MID1_GONE: 0.42,
+  MID2_IN: 0.52,   MID2_PEAK: 0.60,  MID2_OUT: 0.68, MID2_GONE: 0.74,
+  END_IN: 0.86,    END_PEAK: 0.94,
+};
+
+// ─── SCROLL STATE ─────────────────────────────────────
+let scrollY = 0, smoothY = 0, progress = 0;
+const spacer = document.getElementById('spacer');
+spacer.style.height = (SCROLL_PAGES * 100) + 'vh';
+
+function updateScroll() {
+  scrollY = window.pageYOffset || document.documentElement.scrollTop;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  if (!IS_MOBILE) {
+    smoothY += (scrollY - smoothY) * 0.06;
+  } else {
+    smoothY = scrollY;
+  }
+  progress = maxScroll > 0 ? Math.min(smoothY / maxScroll, 1) : 0;
+}
+
+// ─── CURSOR (desktop) ────────────────────────────────
+let mx = 0, my = 0, cx = 0, cy = 0;
+if (!IS_MOBILE) {
+  const cd = document.getElementById('cd'), cr = document.getElementById('cr');
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cd.style.left = mx - 3 + 'px'; cd.style.top = my - 3 + 'px';
+    cx += (mx - cx) * .09; cy += (my - cy) * .09;
+    cr.style.left = cx - 24 + 'px'; cr.style.top = cy - 24 + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('.snd,.brand').forEach(el => {
+    el.addEventListener('mouseenter', () => cr.classList.add('h'));
+    el.addEventListener('mouseleave', () => cr.classList.remove('h'));
+  });
+}
+
+// ─── PRELOADER ────────────────────────────────────────
+const pn = document.getElementById('pn'), pb = document.getElementById('pb');
+const seq = ['5','2','0'];
+let pi = 0;
+function runPre() {
+  pn.className = 'pre-n s'; pn.textContent = seq[pi];
+  setTimeout(() => {
+    pn.className = 'pre-n h';
+    setTimeout(() => { pi++; pi < seq.length ? runPre() : endPre(); }, 350);
+  }, 500);
+}
+function endPre() {
+  pb.classList.add('f');
+  setTimeout(() => {
+    document.getElementById('pre').classList.add('out');
+    setTimeout(onReady, 900);
+  }, 500);
+}
+setTimeout(runPre, 300);
+
+// ─── SPARKLE POOL ────────────────────────────────────
+const sparklePool = document.getElementById('sparklePool');
+const sparkles = [];
+const SPARKLE_COUNT = IS_MOBILE ? 12 : 20;
+for (let i = 0; i < SPARKLE_COUNT; i++) {
+  const el = document.createElement('div');
+  el.className = 'sparkle';
+  sparklePool.appendChild(el);
+  sparkles.push({ el, active: false, startTime: 0 });
+}
+function activateSparkle(t) {
+  const s = sparkles.find(s => !s.active);
+  if (!s) return;
+  s.active = true;
+  s.startTime = t;
+  const dur = 3000 + Math.random() * 3000;
+  s.el.style.left = Math.random() * 100 + '%';
+  s.el.style.top = 20 + Math.random() * 70 + '%';
+  s.el.style.width = (1 + Math.random() * 2) + 'px';
+  s.el.style.height = s.el.style.width;
+  const anim = s.el.animate([
+    { opacity: 0, transform: 'translateY(0) scale(0)' },
+    { opacity: 0.5, transform: 'translateY(-30px) scale(1)', offset: 0.2 },
+    { opacity: 0.2, transform: 'translateY(-80px) scale(0.5)', offset: 0.8 },
+    { opacity: 0, transform: 'translateY(-110px) scale(0)' }
+  ], { duration: dur, easing: 'ease-in-out' });
+  anim.onfinish = () => { s.active = false; };
+}
+
+// ─── SHOOTING STAR POOL ──────────────────────────────
+const starPool = document.getElementById('starPool');
+const stars = [];
+const STAR_COUNT = IS_MOBILE ? 3 : 6;
+for (let i = 0; i < STAR_COUNT; i++) {
+  const el = document.createElement('div');
+  el.className = 'shooting-star';
+  starPool.appendChild(el);
+  stars.push({ el, active: false });
+}
+function activateStar() {
+  const s = stars.find(s => !s.active);
+  if (!s) return;
+  s.active = true;
+  const dur = 800 + Math.random() * 1200;
+  const startX = Math.random() * 100;
+  const startY = Math.random() * 40;
+  const angle = -15 - Math.random() * 30;
+  s.el.style.left = startX + '%';
+  s.el.style.top = startY + '%';
+  s.el.style.transform = `rotate(${angle}deg)`;
+  const anim = s.el.animate([
+    { width: '0px', opacity: 0, transform: `rotate(${angle}deg) translateX(0)` },
+    { width: '80px', opacity: .7, transform: `rotate(${angle}deg) translateX(-60px)`, offset: 0.15 },
+    { width: '120px', opacity: .4, transform: `rotate(${angle}deg) translateX(-200px)`, offset: 0.5 },
+    { width: '40px', opacity: 0, transform: `rotate(${angle}deg) translateX(-400px)` }
+  ], { duration: dur, easing: 'cubic-bezier(.16,1,.3,1)' });
+  anim.onfinish = () => { s.active = false; };
+}
+
+// ─── PARTICLE POSITION GENERATORS ─────────────────────
+function sampleText(text, count, scale) {
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d');
+  const w = 1024, h = 512;
+  cv.width = w; cv.height = h;
+  ctx.fillStyle = '#fff';
+  ctx.font = '900 260px "Arial Black","Helvetica Neue",Arial,sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, w / 2, h / 2);
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const pts = [];
+  for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+    if (data[(y * w + x) * 4 + 3] > 128) pts.push(x, y);
+  }
+  const out = new Float32Array(count * 3);
+  const n = pts.length / 2;
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * n);
+    out[i*3]   = ((pts[idx*2] - w/2) / w) * scale + (Math.random()-.5) * .12;
+    out[i*3+1] = (-(pts[idx*2+1] - h/2) / w) * scale + (Math.random()-.5) * .12;
+    out[i*3+2] = (Math.random()-.5) * 1.2;
+  }
+  return out;
+}
+
+function genHeart(count, scale) {
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d');
+  const w = 1024, h = 1024;
+  cv.width = w; cv.height = h;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  const S = 22;
+  for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.003) {
+    const hx = 16 * Math.pow(Math.sin(a), 3);
+    const hy = 13 * Math.cos(a) - 5 * Math.cos(2*a) - 2 * Math.cos(3*a) - Math.cos(4*a);
+    const px = w/2 + hx * S;
+    const py = h/2 - (hy + 5) * S;
+    if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const pts = [];
+  for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+    if (data[(y * w + x) * 4 + 3] > 128) pts.push(x, y);
+  }
+  const out = new Float32Array(count * 3);
+  const n = pts.length / 2;
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * n);
+    const nx = (pts[idx*2] - w/2) / w;
+    const ny = -(pts[idx*2+1] - h/2) / w;
+    const dist = Math.sqrt(nx*nx + ny*ny);
+    const zDepth = Math.max(0, 1 - dist * 3.2) * 2.0;
+    out[i*3]   = nx * scale + (Math.random()-.5) * .08;
+    out[i*3+1] = ny * scale + (Math.random()-.5) * .08;
+    out[i*3+2] = (Math.random()-.5) * zDepth;
+  }
+  return out;
+}
+
+function genSphere(count, r) {
+  const out = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const phi = Math.acos(1 - 2*(i+.5)/count);
+    const theta = Math.PI*(1+Math.sqrt(5))*i;
+    const rr = r * (.75 + Math.random()*.25);
+    out[i*3]   = rr*Math.sin(phi)*Math.cos(theta);
+    out[i*3+1] = rr*Math.sin(phi)*Math.sin(theta);
+    out[i*3+2] = rr*Math.cos(phi);
+  }
+  return out;
+}
+
+function genRandom(count, spread) {
+  const out = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const u = Math.random(), v = Math.random();
+    const mag = spread * Math.sqrt(-2*Math.log(Math.max(u,.001)));
+    out[i*3]   = mag * Math.cos(2*Math.PI*v);
+    out[i*3+1] = mag * Math.sin(2*Math.PI*v);
+    out[i*3+2] = (Math.random()-.5)*spread*1.5;
+  }
+  return out;
+}
+
+// ─── THREE.JS SETUP ──────────────────────────────────
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, .1, 200);
+camera.position.z = CAM_Z;
+
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById('c'),
+  antialias: !IS_MOBILE, alpha: true,
+  powerPreference: IS_MOBILE ? 'low-power' : 'high-performance'
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(DPR);
+
+// Generate positions
+const posRandom = genRandom(PARTICLE_COUNT, 20);
+const posText   = sampleText('520', PARTICLE_COUNT, TEXT_SCALE);
+const posHeart  = genHeart(PARTICLE_COUNT, TEXT_SCALE);
+const posSphere = genSphere(PARTICLE_COUNT, SPHERE_R);
+
+// Attributes
+const randoms = new Float32Array(PARTICLE_COUNT);
+const sizes   = new Float32Array(PARTICLE_COUNT);
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  randoms[i] = Math.random();
+  sizes[i] = .35 + Math.random() * .55;
+}
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(posRandom, 3));
+geo.setAttribute('aText',    new THREE.BufferAttribute(posText, 3));
+geo.setAttribute('aHeart',   new THREE.BufferAttribute(posHeart, 3));
+geo.setAttribute('aSphere',  new THREE.BufferAttribute(posSphere, 3));
+geo.setAttribute('aRand',    new THREE.BufferAttribute(randoms, 1));
+geo.setAttribute('aSize',    new THREE.BufferAttribute(sizes, 1));
+
+const mat = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime:     { value: 0 },
+    uIntro:    { value: 0 },
+    uMorph:    { value: 0 },
+    uMouse:    { value: new THREE.Vector2(0,0) },
+    uPR:       { value: DPR },
+    uBurst:    { value: new THREE.Vector4(0,0,0,-10) },
+  },
+  vertexShader: `
+    attribute vec3 aText, aHeart, aSphere;
+    attribute float aRand, aSize;
+    uniform float uTime, uIntro, uMorph, uPR;
+    uniform vec2 uMouse;
+    uniform vec4 uBurst;
+    varying float vAlpha, vRand;
+    varying vec3 vColor;
+
+    float ss(float a, float b, float t) {
+      float x = clamp((t - a) / (b - a), 0.0, 1.0);
+      return x * x * (3.0 - 2.0 * x);
+    }
+
+    void main() {
+      // ── Intro: random → text ──
+      vec3 basePos = mix(position, aText, uIntro);
+
+      // ── Morph phases ──
+      float toHeart  = ss(${PH.TH_START.toFixed(2)}, ${PH.TH_END.toFixed(2)}, uMorph);
+      float toSphere = ss(${PH.HS_START.toFixed(2)}, ${PH.HS_END.toFixed(2)}, uMorph);
+      float toText   = ss(${PH.ST_START.toFixed(2)}, ${PH.ST_END.toFixed(2)}, uMorph);
+
+      // Sequential blend
+      vec3 pos = basePos;
+      pos = mix(pos, aHeart, toHeart);
+      pos = mix(pos, aSphere, toSphere);
+      pos = mix(pos, aText, toText);
+
+      // ── Heart pulsation ──
+      float inHeart = toHeart * (1.0 - toSphere);
+      float heartBeat = 1.0 + sin(uTime * 3.5) * 0.028 * inHeart;
+      pos *= heartBeat;
+
+      // ── Breathing ──
+      pos *= 1.0 + sin(uTime * 0.6 + aRand * 6.28) * 0.012;
+
+      // ── Gentle float ──
+      pos.x += sin(uTime * 0.4 + aRand * 12.0) * 0.06;
+      pos.y += cos(uTime * 0.35 + aRand * 10.0) * 0.08;
+      pos.z += sin(uTime * 0.25 + aRand * 8.0) * 0.04;
+
+      // ── Morph turbulence ──
+      float activity = sin(toHeart * 3.14159) * 0.35
+                     + sin(toSphere * 3.14159) * 0.35
+                     + sin(toText * 3.14159) * 0.35;
+      pos.x += sin(pos.y * 0.5 + uTime * 1.2) * activity * 0.5;
+      pos.z += cos(pos.x * 0.5 + uTime * 0.8) * activity * 0.4;
+
+      // ── Spiral during transitions ──
+      float spiralAngle = activity * 1.8 * aRand;
+      float cs = cos(spiralAngle), sn = sin(spiralAngle);
+      vec3 spiralPos = vec3(pos.x * cs - pos.z * sn, pos.y, pos.x * sn + pos.z * cs);
+      pos = mix(pos, spiralPos, activity * 0.25);
+
+      // ── Mouse repulsion ──
+      vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+      vec2 sp = mv.xy / -mv.z;
+      float md = length(sp - uMouse * 0.4);
+      float mi = ss(5.0, 0.0, md) * 0.8;
+      vec2 dir = normalize(sp - uMouse * 0.4 + 0.001);
+      pos.xy += dir * mi * 1.5;
+      pos.z += mi * 2.0;
+
+      // ── Click burst ──
+      float bt = uTime - uBurst.w;
+      if (bt > 0.0 && bt < 2.0) {
+        float bd = length(pos - uBurst.xyz);
+        float bForce = exp(-bt * 3.0) * ss(12.0, 0.0, bd) * 4.0;
+        pos += normalize(pos - uBurst.xyz + 0.001) * bForce;
+      }
+
+      vec4 mvp = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      gl_Position = mvp;
+      gl_PointSize = aSize * uPR * (200.0 / -mv.z);
+      gl_PointSize = max(gl_PointSize, 1.0);
+
+      // ── Alpha ──
+      vAlpha = 0.3 + aRand * 0.5;
+      vAlpha *= smoothstep(65.0, 15.0, -mv.z);
+      float centrality = smoothstep(16.0, 0.0, length(pos.xy));
+      vAlpha *= 0.7 + centrality * 0.3;
+      vRand = aRand;
+
+      // ── Phase color ──
+      vec3 colText   = vec3(0.78, 0.83, 1.0);
+      vec3 colHeart  = vec3(1.0, 0.22, 0.48);
+      vec3 colSphere = vec3(0.55, 0.32, 1.0);
+      vec3 colGold   = vec3(1.0, 0.82, 0.28);
+
+      vColor = colText;
+      vColor = mix(vColor, colHeart, toHeart);
+      vColor = mix(vColor, colSphere, toSphere);
+      vColor = mix(vColor, colGold, toText);
+
+      // Per-particle variation
+      vColor = mix(vColor, vec3(1.0), aRand * 0.18);
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime, uMorph;
+    varying float vAlpha, vRand;
+    varying vec3 vColor;
+
+    void main() {
+      vec2 uv = gl_PointCoord - 0.5;
+      float d = length(uv);
+      if (d > 0.5) discard;
+
+      // Soft glow with bright core
+      float core = smoothstep(0.5, 0.0, d);
+      float glow = exp(-d * 6.0) * 0.45;
+      float a = (core * 0.65 + glow) * vAlpha;
+
+      vec3 col = vColor;
+
+      // White-hot core
+      col = mix(col, vec3(1.0), smoothstep(0.18, 0.0, d) * 0.55);
+
+      // Twinkle
+      a *= 0.72 + sin(uTime * 1.8 + vRand * 30.0) * 0.28;
+
+      // Rare extra-bright spark particles
+      float spark = step(0.94, vRand);
+      a += spark * 0.35 * (0.5 + sin(uTime * 4.0 + vRand * 20.0) * 0.5);
+
+      gl_FragColor = vec4(col, a);
+    }
+  `,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+});
+
+const particles = new THREE.Points(geo, mat);
+scene.add(particles);
+
+// ─── MOUSE / TOUCH ────────────────────────────────────
+const mouseUV = new THREE.Vector2(0, 0);
+document.addEventListener('mousemove', e => {
+  mouseUV.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseUV.y = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+if ('ontouchstart' in window) {
+  document.addEventListener('touchmove', e => {
+    if (e.touches[0]) {
+      mouseUV.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+      mouseUV.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', () => { mouseUV.x = 0; mouseUV.y = 0; }, { passive: true });
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', e => {
+      if (e.gamma != null) {
+        mouseUV.x = Math.max(-1, Math.min(1, mouseUV.x + (e.gamma/90)*.15));
+        mouseUV.y = Math.max(-1, Math.min(1, mouseUV.y + ((e.beta-45)/90)*.15));
+      }
+    }, { passive: true });
+  }
+}
+
+// ─── CLICK BURST ──────────────────────────────────────
+function doBurst(sx, sy) {
+  const v = new THREE.Vector3((sx/window.innerWidth)*2-1, -(sy/window.innerHeight)*2+1, .5);
+  v.unproject(camera);
+  v.sub(camera.position).normalize();
+  const worldPos = camera.position.clone().add(v.multiplyScalar(CAM_Z));
+  mat.uniforms.uBurst.value.set(worldPos.x, worldPos.y, worldPos.z, clock.getElapsedTime());
+
+  // Phase-aware burst color
+  const burstCount = IS_MOBILE ? 6 : 12;
+  let burstColor;
+  if (progress < 0.3) burstColor = 'rgba(120,160,255,.6)';
+  else if (progress < 0.55) burstColor = 'rgba(255,60,100,.6)';
+  else if (progress < 0.8) burstColor = 'rgba(140,80,255,.6)';
+  else burstColor = 'rgba(255,200,60,.6)';
+
+  for (let i = 0; i < burstCount; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `position:fixed;left:${sx}px;top:${sy}px;width:3px;height:3px;border-radius:50%;background:${burstColor};pointer-events:none;z-index:9999;`;
+    document.body.appendChild(dot);
+    const a = (i/burstCount)*Math.PI*2, dist = 25+Math.random()*40;
+    dot.animate([
+      {transform:'translate(0,0) scale(1)',opacity:.8},
+      {transform:`translate(${Math.cos(a)*dist}px,${Math.sin(a)*dist}px) scale(0)`,opacity:0}
+    ], {duration:600,easing:'cubic-bezier(.16,1,.3,1)'}).onfinish = () => dot.remove();
+  }
+}
+document.addEventListener('click', e => doBurst(e.clientX, e.clientY));
+let ts = 0, ty = 0;
+document.addEventListener('touchstart', e => { if(e.touches[0]){ts=Date.now();ty=e.touches[0].clientY;} }, {passive:true});
+document.addEventListener('touchend', e => {
+  if(e.changedTouches[0] && Date.now()-ts<250 && Math.abs(e.changedTouches[0].clientY-ty)<15)
+    doBurst(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+}, {passive:true});
+
+// ─── RESIZE ───────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── DOM REFS ─────────────────────────────────────────
+const elProg  = document.getElementById('prog');
+const elHero  = document.getElementById('ovHero');
+const elMid1  = document.getElementById('ovMid1');
+const elMid2  = document.getElementById('ovMid2');
+const elEnd   = document.getElementById('ovEnd');
+const elHint  = document.getElementById('shint');
+const elOrb1  = document.getElementById('orb1');
+const elOrb2  = document.getElementById('orb2');
+const elOrb3  = document.getElementById('orb3');
+
+// ─── RENDER LOOP ──────────────────────────────────────
+const clock = new THREE.Clock();
+let lastSparkle = 0, lastStar = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  updateScroll();
+
+  const t = clock.getElapsedTime();
+  mat.uniforms.uTime.value = t;
+  mat.uniforms.uMorph.value = progress;
+  mat.uniforms.uMouse.value.lerp(mouseUV, .04);
+
+  // ── Camera movement ──
+  camera.position.x = Math.sin(t * .12) * .6 + mouseUV.x * 1.8;
+  camera.position.y = Math.cos(t * .1) * .35 + mouseUV.y * 1.2;
+  camera.lookAt(0, 0, 0);
+  camera.position.z = CAM_Z - progress * 5;
+
+  // ── Particle rotation ──
+  particles.rotation.y = progress * Math.PI * .5 + Math.sin(t * .08) * .08;
+  particles.rotation.x = Math.sin(progress * Math.PI) * .12;
+
+  // ── Progress bar ──
+  elProg.style.transform = `scaleX(${progress})`;
+  elProg.style.backgroundPosition = `${progress * 200}% 0`;
+
+  // ── Smooth step helper ──
+  const ss = (a, b, x) => { const v = Math.max(0, Math.min(1, (x-a)/(b-a))); return v*v*(3-2*v); };
+
+  // ── Overlay sections ──
+  elHero.style.opacity = 1 - ss(PH.HERO_OUT, PH.HERO_GONE, progress);
+
+  const m1 = ss(PH.MID1_IN, PH.MID1_PEAK, progress) * (1 - ss(PH.MID1_OUT, PH.MID1_GONE, progress));
+  elMid1.style.opacity = m1;
+  elMid1.style.transform = `translateY(${(1-m1)*20}px)`;
+
+  const m2 = ss(PH.MID2_IN, PH.MID2_PEAK, progress) * (1 - ss(PH.MID2_OUT, PH.MID2_GONE, progress));
+  elMid2.style.opacity = m2;
+  elMid2.style.transform = `translateY(${(1-m2)*20}px)`;
+
+  const me = ss(PH.END_IN, PH.END_PEAK, progress);
+  elEnd.style.opacity = me;
+  elEnd.style.transform = `scale(${.92 + me * .08})`;
+
+  // Golden glow class toggle
+  if (me > 0.5) {
+    elEnd.classList.add('glow-active');
+  } else {
+    elEnd.classList.remove('glow-active');
+  }
+
+  // Scroll hint
+  elHint.style.opacity = 1 - ss(.03, .1, progress);
+
+  // ── Glow orbs: color shift per phase ──
+  if (progress < PH.TH_START) {
+    elOrb1.style.background = '#0a0a38';
+    elOrb2.style.background = '#06082e';
+    elOrb3.style.background = '#0c0a28';
+  } else if (progress < PH.HS_START) {
+    elOrb1.style.background = '#380a1a';
+    elOrb2.style.background = '#2e0818';
+    elOrb3.style.background = '#3a0a22';
+    elOrb1.style.opacity = '.22';
+    elOrb3.style.opacity = '.20';
+  } else if (progress < PH.ST_START) {
+    elOrb1.style.background = '#1a0a3a';
+    elOrb2.style.background = '#100830';
+    elOrb3.style.background = '#200a3a';
+    elOrb1.style.opacity = '.20';
+    elOrb3.style.opacity = '.18';
+  } else {
+    elOrb1.style.background = '#2a1a08';
+    elOrb2.style.background = '#201508';
+    elOrb3.style.background = '#30200a';
+    elOrb1.style.opacity = '.24';
+    elOrb3.style.opacity = '.22';
+  }
+
+  // ── Sparkles ──
+  if (t - lastSparkle > (IS_MOBILE ? 0.6 : 0.35)) {
+    activateSparkle(t);
+    lastSparkle = t;
+  }
+
+  // ── Shooting stars ──
+  if (t - lastStar > 3 + Math.random() * 4) {
+    activateStar();
+    lastStar = t;
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ─── INIT (after preloader) ───────────────────────────
+let introProgress = 0;
+function onReady() {
+  function introAnim() {
+    introProgress += (1 - introProgress) * .015;
+    mat.uniforms.uIntro.value = introProgress;
+    if (introProgress < .998) requestAnimationFrame(introAnim);
+    else mat.uniforms.uIntro.value = 1;
+  }
+  introAnim();
+}
+
+// ─── SOUND ────────────────────────────────────────────
+const sndBtn = document.getElementById('snd');
+let audioCtx, audioOn = false;
+sndBtn.addEventListener('click', () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const g = audioCtx.createGain();
+    g.gain.value = 0;
+    g.connect(audioCtx.destination);
+
+    [110, 164.81, 220, 329.63].forEach((freq, i) => {
+      const o = audioCtx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.detune.value = (Math.random()-.5) * 8;
+      const og = audioCtx.createGain();
+      og.gain.value = [.025, .015, .01, .008][i];
+      o.connect(og);
+      og.connect(g);
+      o.start();
+    });
+
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = .08;
+    const lfoG = audioCtx.createGain();
+    lfoG.gain.value = .008;
+    lfo.connect(lfoG);
+    lfoG.connect(g.gain);
+    lfo.start();
+
+    audioCtx._mainGain = g;
+  }
+
+  audioOn = !audioOn;
+  sndBtn.classList.toggle('on', audioOn);
+  const g = audioCtx._mainGain;
+  g.gain.cancelScheduledValues(audioCtx.currentTime);
+  g.gain.setTargetAtTime(audioOn ? 1 : 0, audioCtx.currentTime, .5);
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+});
+
+// ─── KEYBOARD EASTER EGG ─────────────────────────────
+let kbuf = '';
+document.addEventListener('keydown', e => {
+  kbuf += e.key;
+  if (kbuf.includes('520')) {
+    kbuf = '';
+    // Golden flash + triple pulse
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;background:radial-gradient(circle,rgba(255,200,60,.15),transparent 70%)';
+    document.body.appendChild(flash);
+    flash.animate([{opacity:0},{opacity:1,offset:.1},{opacity:0}], {duration:2000}).onfinish = () => flash.remove();
+
+    const st = clock.getElapsedTime();
+    (function p(){
+      const dt = clock.getElapsedTime() - st;
+      const s = 1 + Math.sin(dt*10)*.08*Math.exp(-dt*2);
+      particles.scale.set(s,s,s);
+      if(dt<3) requestAnimationFrame(p); else particles.scale.set(1,1,1);
+    })();
+  }
+  if (kbuf.length > 20) kbuf = kbuf.slice(-10);
+});
+</script>
+</body>
+</html>
