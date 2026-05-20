@@ -129,6 +129,10 @@ animation:gr 8s steps(10) infinite}
 .narr-line{font-family:'Noto Serif SC',serif;font-size:clamp(15px,2.2vw,22px);font-weight:200;line-height:2.4;color:var(--fg2);margin-bottom:4px}
 .narr-em{color:var(--fg);font-size:clamp(17px,2.6vw,26px);margin-top:36px;line-height:1.9;position:relative}
 .narr-em::before{content:'';display:block;width:32px;height:1px;background:rgba(176,136,64,.2);margin:0 auto 24px}
+.narr-btns{display:flex;justify-content:center;gap:clamp(16px,3vw,28px);margin-top:clamp(40px,6vh,60px)}
+.narr-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border:1px solid var(--fg3);border-radius:100px;font-family:'Noto Serif SC',serif;font-size:clamp(12px,1.4vw,14px);font-weight:200;letter-spacing:.12em;color:var(--fg2);cursor:pointer;transition:all .4s var(--ease);background:none}
+.narr-btn:hover{border-color:rgba(255,255,255,.2);color:var(--fg);background:rgba(255,255,255,.02);gap:12px}
+.narr-btn svg{width:16px;height:16px;fill:currentColor;flex-shrink:0}
 
 /* SPLIT WATERFALL */
 .split{display:grid;grid-template-columns:1fr 48px 1fr;padding:0 clamp(20px,4vw,48px);max-width:1400px;margin:0 auto}
@@ -308,6 +312,10 @@ animation:gr 8s steps(10) infinite}
       <p class="narr-line">目前我投入在 AI 视觉和听觉的设计</p>
       <p class="narr-line">包含图片、视频、网站，以及它们的一键式生产</p>
       <p class="narr-line narr-em">我在探索如何使用 AI 这一时代技术<br>给世界带来有用且美的事物</p>
+      <div class="narr-btns narr-line">
+        <button class="narr-btn" onclick="document.getElementById('sec-img').scrollIntoView({behavior:'smooth'})"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14l-5-5 1.41-1.41L11 13.17l7.59-7.59L20 7l-9 9z"/></svg>查看作品集</button>
+        <button class="narr-btn" id="narr-contact" onclick="document.getElementById('qrm').classList.add('on')"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>联系我</button>
+      </div>
     </div>
   </section>
 
@@ -366,7 +374,7 @@ animation:gr 8s steps(10) infinite}
 <div class="qrm" id="qrm">
   <div class="qrm-bg" onclick="closeQR()"></div>
   <div class="qrm-x" onclick="closeQR()">&times;</div>
-  <div class="qrm-c"><img src="works/img/wechat-qr.jpg" alt="WeChat QR"><p>扫码添加微信</p></div>
+  <div class="qrm-c"><img src="works/img/wechat-qr.jpg" alt="WeChat QR"><p>长按二维码添加微信</p></div>
 </div>
 
 <div class="wov" id="wov"><button class="wov-back" id="wov-back"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>返回作品集</button><iframe id="wov-frame"></iframe></div>
